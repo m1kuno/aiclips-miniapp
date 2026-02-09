@@ -161,7 +161,7 @@
                 // Инициализируем виджет ЮKassa
                 const checkout = new window.YooMoneyCheckoutWidget({
                     confirmation_token: data.confirmation_token,
-                    return_url: 'https://t.me/your_bot_username',  // Замени на своего бота
+                    // return_url: 'https://t.me/your_bot_username',  // Замени на своего бота
                     
                     error_callback: function(error) {
                         console.error('Payment error:', error);
@@ -174,30 +174,31 @@
                 checkout.render('payment-form');
                 
                 // Отслеживаем успешную оплату
-                checkout.on('success', async function() {
+                checkout.on('success', async function () {
                 try {
                     console.log('Payment successful!');
 
-                    // 1) Удаляем виджет (рекомендуется ЮKassa)
-                    checkout.destroy(); // важно [web:63]
-
-                    // 2) Синхронизируемся (по желанию можно оставить)
-                    await syncWithServer();
-
-                    // 3) Закрываем Mini App сразу
-                    if (window.Telegram?.WebApp?.close) {
-                    window.Telegram.WebApp.close(); // или tg.close() [web:37]
-                    return;
+                    // Можно скрыть виджет
+                    if (typeof checkout.destroy === 'function') {
+                    checkout.destroy();
                     }
 
-                    // fallback если вдруг открыто не в Telegram
-                    window.close();
+                    // Обновить данные подписки/статистики
+                    try {
+                    await syncWithServer();
+                    } catch (e) {
+                    console.error('syncWithServer error after payment', e);
+                    }
+
+                    // Перейти на нужную страницу Mini App
+                    goToPage('subscription'); // или 'pricing' — как тебе удобнее
+
+                    // НИЧЕГО не закрываем: ни tg.close(), ни WebApp.close()
                 } catch (e) {
-                    console.error(e);
-                    // даже если sync упал — всё равно закрываем
-                    window.Telegram?.WebApp?.close?.(); // [web:37]
+                    console.error('Payment success handler error', e);
                 }
                 });
+
 
                 
             } catch (error) {

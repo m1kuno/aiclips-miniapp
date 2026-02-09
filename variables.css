@@ -1,0 +1,36 @@
+
+        :root {
+            /* Автоматически берём цвета из темы Telegram */
+            --tg-bg: var(--tg-theme-bg-color, #ffffff);
+            --tg-text: var(--tg-theme-text-color, #000000);
+            --tg-hint: var(--tg-theme-hint-color, #999999);
+            --tg-link: var(--tg-theme-link-color, #0088cc);
+            --tg-button: var(--tg-theme-button-color, #0088cc);
+            --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+            --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            
+            /* Адаптивные цвета */
+            --color-primary: var(--tg-button);
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-surface: var(--tg-secondary-bg);
+            --color-card: var(--tg-bg);
+            --color-text: var(--tg-text);
+            --color-muted: var(--tg-hint);
+        }
+
+        /* Автоматическая адаптация под тёмную тему */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-border: rgba(255, 255, 255, 0.1);
+                --color-shadow: rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        /* Светлая тема */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --color-border: rgba(0, 0, 0, 0.08);
+                --color-shadow: rgba(0, 0, 0, 0.1);
+            }

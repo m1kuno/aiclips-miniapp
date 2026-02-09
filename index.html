@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Clips</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://yookassa.ru/checkout-widget/v1/checkout-widget.js"></script>
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="components.css">
+</head>
+<body>
+    <!-- ONBOARDING PAGE -->
+    <div id="onboarding-page" class="page">
+        <div class="onboarding">
+            <div class="onboarding-icon">🎬</div>
+            <h1 class="onboarding-title">Добро пожаловать в AI Clips!</h1>
+            <p class="onboarding-text">
+                Автоматическая нарезка видео в вирусные Shorts<br>
+                Давайте настроим всё за пару минут
+            </p>
+
+            <div class="onboarding-steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Регистрация</h4>
+                        <p>Создайте аккаунт через Telegram</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Подключите канал</h4>
+                        <p>Добавьте YouTube канал для постинга</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Выберите тариф</h4>
+                        <p>Начните с бесплатного trial</p>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="startOnboarding()">Начать</button>
+        </div>
+    </div>
+
+    <!-- REGISTRATION PAGE -->
+    <div id="registration-page" class="page">
+        <div class="page-header">
+            <h1 class="page-title">Регистрация</h1>
+            <p class="page-subtitle">Шаг 1 из 3</p>
+        </div>
+
+        <div class="alert alert-info">
+            <span style="font-size: 1.5rem;">ℹ️</span>
+            <div>
+                Мы используем ваши данные Telegram для регистрации.<br>
+                Никакой дополнительной информации не требуется.
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">👤 Данные аккаунта</div>
+            <div style="margin-top: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 48px; height: 48px; background: var(--color-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        👤
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;" id="reg-name">-</div>
+                        <div style="font-size: 0.875rem; opacity: 0.6;" id="reg-username">-</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.75rem; opacity: 0.6; margin-top: 8px;">
+                    ID: <span id="reg-id">-</span>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" onclick="completeRegistration()">Завершить</button>
+    </div>
+
+    <!-- CHANNELS PAGE -->
+    <div id="channels-page" class="page">
+        <div class="page-header">
+            <h1 class="page-title">Мои каналы</h1>
+            <p class="page-subtitle">Управление YouTube каналами</p>
+        </div>
+
+        <div id="channels-list"></div>
+
+        <div class="card">
+            <div class="card-title">➕ Добавить YouTube канал</div>
+            <div class="input-group">
+                <label class="input-label">Ссылка на канал</label>
+                <input type="url" id="channel-url" placeholder="https://youtube.com/@yourhandle">
+                <button type="button" class="btn btn-primary" onclick="addChannel()">Добавить канал</button>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span>💡</span>
+            <div>
+                <strong>Как это работает:</strong><br>
+                После добавления канала мы попросим вас подтвердить владение через OAuth.
+            </div>
+        </div>
+    </div>
+
+    <!-- HOME PAGE -->
+    <div id="home-page" class="page">
+        <div class="page-header">
+            <h1 class="page-title">Главная</h1>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="clips-remaining">0</div>
+                <div class="stat-label">Осталось клипов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="videos-processed">0</div>
+                <div class="stat-label">Обработано видео</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-views">0</div>
+                <div class="stat-label">Просмотров</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="days-remaining">0</div>
+                <div class="stat-label">Дней подписки</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">🎥 Отправить видео</h3>
+            <div class="input-group">
+                <input type="text" id="video-url" placeholder="Вставьте ссылку на YouTube видео">
+                <button type="button" class="btn btn-primary" onclick="submitVideo()">Отправить видео</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 class="card-title" style="margin: 0;">📊 История обработки</h3>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="refreshHistory()">Обновить</button>
+            </div>
+            <div id="videos-list"></div>
+        </div>
+    </div>
+
+    <!-- SUBSCRIPTION PAGE -->
+    <div id="subscription-page" class="page">
+        <div class="page-header">
+            <h1 class="page-title">Моя подписка</h1>
+        </div>
+
+        <div id="subscription-content"></div>
+
+        <button class="btn btn-secondary" onclick="goToPage('pricing')" style="margin-top: 16px;">
+            💎 Обновить подписку
+        </button>
+    </div>
+
+    <!-- PAYMENT PAGE -->
+    <div id="payment-page" class="page">
+        <div class="page-header">
+            <h1 class="page-title">💳 Оплата</h1>
+            <p class="page-subtitle" id="payment-plan-title">Тариф</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">Информация о платеже</div>
+            <div style="margin: 16px 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Тариф:</span>
+                    <strong id="payment-plan-name">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Сумма:</span>
+                    <strong id="payment-amount">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Клипов:</span>
+                    <strong id="payment-clips">-</strong>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">Форма оплаты</div>
+            <div id="payment-form"></div>
+            <div id="payment-error" style="color: var(--color-danger); margin-top: 12px; display: none;"></div>
+        </div>
+        
+        <button type="button" class="btn btn-secondary" onclick="goToPage('pricing')" style="margin-top: 16px;">
+            ← Назад к тарифам
+        </button>
+    </div>
+
+
+    <!-- PRICING PAGE -->
+    <div id="pricing-page" class="page">
+        <div class="page-header">
+            <h1 class="page-title">Тарифы</h1>
+            <p class="page-subtitle">Выберите подходящий план</p>
+        </div>
+
+        <div class="pricing-grid">
+            <!-- FREE TRIAL -->
+            <div class="pricing-card trial" id="trial-card">
+                <h3>🎁 Free Trial</h3>
+                <div class="price">Бесплатно</div>
+                <div class="price-period">14 дней</div>
+                <ul class="pricing-features">
+                    <li>✓ 5 клипов бесплатно</li>
+                    <li>✓ Все базовые функции</li>
+                    <li>✓ Без привязки карты</li>
+                </ul>
+                <button type="button" class="btn btn-success" id="trial-btn" onclick="selectPlan('free_trial')">Начать бесплатно</button>
+            </div>
+
+            <!-- TEST -->
+            <div class="pricing-card">
+                <h3>💼 Тест-драйв</h3>
+                <div class="price">1 000₽</div>
+                <div class="price-period">разовый</div>
+                <ul class="pricing-features">
+                    <li>✓ 3 клипа</li>
+                    <li>✓ Субтитры</li>
+                    <li>✓ Скачивание</li>
+                </ul>
+                <button type="button" class="btn btn-secondary" onclick="selectPlan('test')">Выбрать</button>
+            </div>
+
+            <!-- STANDARD -->
+            <div class="pricing-card featured">
+                <div class="pricing-badge">⭐ Популярный</div>
+                <h3>⚡ Стандарт</h3>
+                <div class="price">15 000₽</div>
+                <div class="price-period">в месяц</div>
+                <ul class="pricing-features">
+                    <li>✓ 30 клипов/мес</li>
+                    <li>✓ Автопостинг</li>
+                    <li>✓ Аналитика</li>
+                    <li>✓ Поддержка</li>
+                </ul>
+                <button type="button" class="btn btn-primary" onclick="selectPlan('standard')">Выбрать</button>
+            </div>
+
+            <!-- PRO -->
+            <div class="pricing-card">
+                <h3>🚀 Про</h3>
+                <div class="price">40 000₽</div>
+                <div class="price-period">в месяц</div>
+                <ul class="pricing-features">
+                    <li>✓ 60 клипов/мес</li>
+                    <li>✓ Брендинг</li>
+                    <li>✓ Менеджер</li>
+                </ul>
+                <button type="button" class="btn btn-secondary" onclick="selectPlan('pro')">Выбрать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav" id="bottom-nav" style="display: none;">
+        <button type="button" class="nav-item active" onclick="goToPage('home')">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Главная</div>
+        </button>
+        <button class="nav-item" onclick="goToPage('channels')">
+            <div class="nav-icon">📺</div>
+            <div class="nav-label">Каналы</div>
+        </button>
+        <button class="nav-item" onclick="goToPage('subscription')">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Подписка</div>
+        </button>
+        <button class="nav-item" onclick="goToPage('pricing')">
+            <div class="nav-icon">💎</div>
+            <div class="nav-label">Тарифы</div>
+        </button>
+    </nav>
+
+    
+    <!-- Скрипты (БЕЗ alert) -->
+    <script src="telegram.js"></script>
+    <script src="navigation.js"></script>
+    <script src="onboarding.js"></script>
+    <script src="channels.js"></script>
+    <script src="home.js"></script>
+    <script src="subscription.js"></script>
+    <script src="payment.js"></script>
+    <script src="init.js"></script>
+</body>
+</html>

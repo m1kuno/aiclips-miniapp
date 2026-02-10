@@ -2,6 +2,28 @@
         function loadChannels() {
             channels = STORAGE.get('channels') || [];
             renderChannels();
+            refreshChannelsFromServer();
+        }
+
+        async function refreshChannelsFromServer() {
+            try {
+                const initData = window.Telegram?.WebApp?.initData || '';
+                if (!initData) return;
+
+                const resp = await fetch(`${API_URL}/webapp/channels/list`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ init_data: initData })
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(data.detail || `channels.list HTTP ${resp.status}`);
+
+                channels = data.channels || [];
+                STORAGE.set('channels', channels);
+                renderChannels();
+            } catch (error) {
+                console.error('refreshChannelsFromServer error:', error);
+            }
         }
     
         function renderChannels() {
@@ -30,13 +52,17 @@
                         </div>
                         ${renderChannelLinks(ch)}
                     </div>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeChannel(${i})">Удалить</button>
+                    <div class="channel-actions">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeChannel(${i})">Удалить</button>
+                    </div>
                 </div>
             `).join('');
         }
 
         function renderChannelLinks(channel) {
-            const links = Array.isArray(channel.platformLinks) ? channel.platformLinks : [];
+            const links = Array.isArray(channel.platformLinks)
+                ? channel.platformLinks
+                : buildPlatformLinks(channel);
             if (!links.length) return '';
 
             const items = links.map((link) => `
@@ -52,26 +78,14 @@
 
             return `<div class="channel-links">${items}</div>`;
         }
-    
-        function addChannel() {
-            console.log('=== addChannel called ===');
-            const url = document.getElementById('channel-url').value.trim();
-            console.log('URL:', url);
 
-            if (!url) {
-                tg.showAlert('❌ Введите ссылку на канал');
-                return;
-            }
-    
-            if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
-                tg.showAlert('❌ Введите корректную ссылку YouTube');
-                return;
-            }
-    
-            let handle = url.match(/@([^/]+)/)?.[1] || 'channel';
-            handle = handle.replace(/[^a-zA-Z0-9._-]/g, '') || 'channel';
+        function buildPlatformLinks(channel) {
+            const handleFromUrl = (channel.url || '').match(/@([^/]+)/)?.[1] || '';
+            const handleRaw = (channel.handle || '').replace(/^@/, '') || handleFromUrl || 'channel';
+            const handle = handleRaw.replace(/[^a-zA-Z0-9._-]/g, '') || 'channel';
+            const originalUrl = channel.url || `https://www.youtube.com/@${handle}`;
 
-            const platformLinks = [
+            return [
                 {
                     label: 'YouTube Shorts',
                     url: `https://www.youtube.com/@${handle}/shorts`,
@@ -89,40 +103,68 @@
                 },
                 {
                     label: 'Оригинальный канал',
-                    url,
+                    url: originalUrl,
                     icon: '🔗'
                 }
             ];
+        }
     
-            const newChannel = {
-                url: url,
-                handle: '@' + handle,
-                name: 'YouTube Channel',
-                status: 'pending',
-                addedAt: new Date().toISOString(),
-                platformLinks
-            };
+        async function addChannel() {
+            console.log('=== addChannel called ===');
+            const url = document.getElementById('channel-url').value.trim();
+            console.log('URL:', url);
+
+            if (!url) {
+                tg.showAlert('❌ Введите ссылку на канал');
+                return;
+            }
     
-            channels.push(newChannel);
-            STORAGE.set('channels', channels);
+            if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+                tg.showAlert('❌ Введите корректную ссылку YouTube');
+                return;
+            }
     
-            tg.sendData(JSON.stringify({
-                action: 'add_channel',
-                user_id: user?.id,
-                channel_url: url,
-                channel_handle: '@' + handle
-            }));
+            let handle = url.match(/@([^/]+)/)?.[1] || 'channel';
+            handle = handle.replace(/[^a-zA-Z0-9._-]/g, '') || 'channel';
     
-            document.getElementById('channel-url').value = '';
-            renderChannels();
-    
-            tg.showPopup({
-                title: '✅ Канал добавлен!',
-                message: 'Теперь выберите тариф для начала работы',
-                buttons: [{type: 'ok'}]
-            }, () => {
-                goToPage('pricing');
-            });
+            try {
+                const initData = window.Telegram?.WebApp?.initData || '';
+                if (!initData) {
+                    tg.showAlert('❌ Откройте Mini App внутри Telegram');
+                    return;
+                }
+
+                const resp = await fetch(`${API_URL}/webapp/channels/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        init_data: initData,
+                        channel_url: url,
+                        channel_handle: '@' + handle
+                    })
+                });
+
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(data.detail || `channels.add HTTP ${resp.status}`);
+
+                document.getElementById('channel-url').value = '';
+                await refreshChannelsFromServer();
+
+                tg.showPopup({
+                    title: '✅ Канал добавлен!',
+                    message: 'Теперь выберите тариф для начала работы',
+                    buttons: [{type: 'ok'}]
+                }, () => {
+                    goToPage('pricing');
+                });
+            } catch (error) {
+                console.error('addChannel error:', error);
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: String(error.message || error),
+                    buttons: [{ type: 'ok' }]
+                });
+            }
         }
     
         function removeChannel(index) {

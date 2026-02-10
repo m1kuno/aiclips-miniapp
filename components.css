@@ -241,13 +241,14 @@
         /* Channel Card */
         .channel-card {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 16px;
             padding: 16px;
             background: var(--color-card);
             border: 2px solid var(--color-border, rgba(0, 0, 0, 0.08));
             border-radius: 12px;
             margin-bottom: 12px;
+            flex-wrap: wrap;
         }
 
         .channel-card.connected {
@@ -269,6 +270,7 @@
 
         .channel-info {
             flex: 1;
+            min-width: 0;
         }
 
         .channel-name {
@@ -314,6 +316,18 @@
         .channel-link:active {
             transform: scale(0.98);
             opacity: 0.9;
+        }
+
+        .channel-actions {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        .channel-actions .btn {
+            width: auto;
+            min-width: 120px;
         }
 
         .status-badge {

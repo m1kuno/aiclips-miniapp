@@ -168,11 +168,37 @@
         }
     
         function removeChannel(index) {
-            tg.showConfirm('Удалить этот канал?', (confirmed) => {
-                if (confirmed) {
-                    channels.splice(index, 1);
+            tg.showConfirm('Удалить этот канал?', async (confirmed) => {
+                if (!confirmed) return;
+
+                try {
+                    const initData = window.Telegram?.WebApp?.initData || '';
+                    if (!initData) {
+                        tg.showAlert('❌ Откройте Mini App внутри Telegram');
+                        return;
+                    }
+
+                    const resp = await fetch(`${API_URL}/webapp/channels/remove`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            init_data: initData,
+                            channel_index: index
+                        })
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (!resp.ok) throw new Error(data.detail || `channels.remove HTTP ${resp.status}`);
+
+                    channels = data.channels || [];
                     STORAGE.set('channels', channels);
                     renderChannels();
+                } catch (error) {
+                    console.error('removeChannel error:', error);
+                    tg.showPopup({
+                        title: 'Ошибка',
+                        message: String(error.message || error),
+                        buttons: [{ type: 'ok' }]
+                    });
                 }
             });
         }

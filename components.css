@@ -147,6 +147,8 @@
         input[type="text"],
         input[type="url"] {
             width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
             padding: 14px;
             border: 2px solid var(--color-border, rgba(0, 0, 0, 0.08));
             border-radius: 12px;
@@ -286,6 +288,32 @@
             gap: 6px;
             font-size: 0.75rem;
             margin-top: 4px;
+        }
+
+        .channel-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .channel-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            text-decoration: none;
+            color: var(--color-primary);
+            background: var(--color-surface);
+            border: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+            transition: transform 0.1s ease, opacity 0.2s ease;
+        }
+
+        .channel-link:active {
+            transform: scale(0.98);
+            opacity: 0.9;
         }
 
         .status-badge {

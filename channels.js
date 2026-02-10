@@ -28,10 +28,29 @@
                         <div class="channel-status">
                             <span class="status-badge ${ch.status}">${ch.status === 'connected' ? '✓ Подключён' : '⏳ Ожидание'}</span>
                         </div>
+                        ${renderChannelLinks(ch)}
                     </div>
                     <button type="button" class="btn btn-danger btn-sm" onclick="removeChannel(${i})">Удалить</button>
                 </div>
             `).join('');
+        }
+
+        function renderChannelLinks(channel) {
+            const links = Array.isArray(channel.platformLinks) ? channel.platformLinks : [];
+            if (!links.length) return '';
+
+            const items = links.map((link) => `
+                <a
+                    class="channel-link"
+                    href="${link.url}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    ${link.icon ? `${link.icon} ` : ''}${link.label}
+                </a>
+            `).join('');
+
+            return `<div class="channel-links">${items}</div>`;
         }
     
         function addChannel() {
@@ -50,13 +69,38 @@
             }
     
             let handle = url.match(/@([^/]+)/)?.[1] || 'channel';
+            handle = handle.replace(/[^a-zA-Z0-9._-]/g, '') || 'channel';
+
+            const platformLinks = [
+                {
+                    label: 'YouTube Shorts',
+                    url: `https://www.youtube.com/@${handle}/shorts`,
+                    icon: '▶️'
+                },
+                {
+                    label: 'Instagram Reels',
+                    url: `https://www.instagram.com/${handle}/reels/`,
+                    icon: '📸'
+                },
+                {
+                    label: 'TikTok',
+                    url: `https://www.tiktok.com/@${handle}`,
+                    icon: '🎵'
+                },
+                {
+                    label: 'Оригинальный канал',
+                    url,
+                    icon: '🔗'
+                }
+            ];
     
             const newChannel = {
                 url: url,
                 handle: '@' + handle,
                 name: 'YouTube Channel',
                 status: 'pending',
-                addedAt: new Date().toISOString()
+                addedAt: new Date().toISOString(),
+                platformLinks
             };
     
             channels.push(newChannel);
